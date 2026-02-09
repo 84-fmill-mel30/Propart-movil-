@@ -3,72 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProPart Diagnostic PRO - Panel Admin</title>
-    <link rel="stylesheet" href="app-DA_Xckwh.css">
+    <title>ProPart Diagnostic PRO</title>
     <style>
-        body { background-color: #121212; color: #fff; font-family: sans-serif; margin: 0; }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
-        .sensor-card { background: #1e1e1e; border: 1px solid #3498ff; border-radius: 8px; padding: 15px; text-align: center; }
-        .graph-placeholder { height: 150px; background: linear-gradient(180deg, #121212 0%, #1e1e1e 100%); border-bottom: 2px solid #3498ff; margin-bottom: 10px; }
-        .admin-fab { position: fixed; bottom: 30px; right: 30px; background: #3498ff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; }
-        .status-bar { background: #343434; padding: 5px 20px; font-size: 12px; display: flex; justify-content: space-between; }
+        :root { --neon-blue: #3498ff; --dark-bg: #0a0a0a; --panel-bg: #161616; --warning: #fa8900; }
+        body { background-color: var(--dark-bg); color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; user-select: none; }
+        
+        /* Blindaje visual contra inspección */
+        #safety-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .safety-card { background: var(--panel-bg); padding: 30px; border: 1px solid var(--neon-blue); border-radius: 15px; max-width: 500px; }
+        
+        /* Dashboard de Sensores */
+        .header { background: var(--panel-bg); padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; font-size: 12px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; height: 80vh; }
+        .card { background: var(--panel-bg); border: 1px solid #222; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .label { font-size: 14px; color: var(--neon-blue); font-weight: bold; margin-top: 10px; }
+        .value { font-size: 32px; font-family: 'Courier New', monospace; color: #00ff00; }
+        
+        /* Botón de Admin (Flotante) */
+        .admin-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--neon-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 0 20px rgba(52, 152, 255, 0.4); }
     </style>
 </head>
-<body>
-
-    // Motor de Gráficas ProPart
-const sensors = {
-    app1: { val: 0, pin: 24, color: '#3498ff' },
-    app2: { val: 0, pin: 25, color: '#fa8900' },
-    pulse: { val: 0, pin: 45, color: '#00ff00' }
-};
-
-function updateDiagnostic() {
-    // Simulación de lectura del ELM327 con delay de 200ms
-    sensors.app1.val = (Math.random() * 4.5).toFixed(2);
-    sensors.app2.val = (sensors.app1.val / 2).toFixed(2);
-    
-    document.getElementById('chart-app1').innerText = `Pin ${sensors.app1.pin}: ${sensors.app1.val}V`;
-    document.getElementById('chart-app2').innerText = `Pin 25: ${sensors.app2.val}V`;
-    
-    console.log("Chards: Monitoreando correlación APP...");
-}
-
-setInterval(updateDiagnostic, 200); // El ritmo del escáner chino
-    
-    <div class="status-bar">
-        <span>BT: ELM327 CONECTADO (LATENCIA: 200ms)</span>
-        <span>MODO: DIAGNÓSTICO EN VIVO</span>
-    </div>
-
-    <h2 style="text-align: center; color: #3498ff;">ProPart Diagnostic PRO</h2>
-
-    <div class="dashboard">
-        <div class="sensor-card">
-            <div class="graph-placeholder" id="chart-app1"></div>
-            <span>APP 1: 0.95V</span>
-        </div>
-        <div class="sensor-card">
-            <div class="graph-placeholder" id="chart-app2"></div>
-            <span>APP 2: 0.47V</span>
-        </div>
-        <div class="sensor-card">
-            <div class="graph-placeholder" id="chart-pulse"></div>
-            <span>PULSO: 2.8ms</span>
-        </div>
-        <div class="sensor-card">
-            <div class="graph-placeholder" id="chart-rpm"></div>
-            <span>RPM: 850</span>
+<body oncontextmenu="return false;"> <div id="safety-overlay">
+        <div class="safety-card">
+            <h2 style="color: var(--warning);">⚠️ PROTOCOLO DE SEGURIDAD</h2>
+            <p>Esta es una herramienta de alta precisión técnica. Al entrar, confirmas que posees el colmillo necesario. Manipulación de ECU y arneses es bajo TU responsabilidad.</p>
+            <button onclick="acceptSafety()" style="background: var(--neon-blue); color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold;">ENTIENDO Y ACEPTO EL RIESGO</button>
         </div>
     </div>
 
-    <div class="admin-fab" onclick="alert('Accediendo al Panel de Especialista...')">
-        <span style="font-size: 24px;">🛡️</span>
+    <div class="header">
+        <span id="status">BT: DESCONECTADO</span>
+        <button onclick="connectBT()" style="background:none; border: 1px solid var(--neon-blue); color: var(--neon-blue); cursor: pointer; border-radius: 3px;">CONECTAR ELM327</button>
     </div>
+
+    <div class="grid">
+        <div class="card"><div class="value" id="app1">0.00V</div><div class="label">APP 1 (PIN 24)</div></div>
+        <div class="card"><div class="value" id="app2">0.00V</div><div class="label">APP 2 (PIN 25)</div></div>
+        <div class="card"><div class="value" id="pulse">0.0ms</div><div class="label">PULSO INYECTOR</div></div>
+        <div class="card"><div class="value" id="rpm">0000</div><div class="label">RPM MOTOR</div></div>
+    </div>
+
+    <div class="admin-fab" onclick="adminAccess()">🛡️</div>
 
     <script>
-        // Aquí irá la lógica de JS para conectar con el Bluetooth o leer los CSV
-        console.log("ProPart Diagnostic cargado. Listo para el handshake con ELM327.");
+        // --- BLINDAJE DE INFORMACIÓN ---
+        // Bloqueo de teclas de inspección (F12, Ctrl+Shift+I)
+        document.onkeydown = (e) => {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
+        };
+
+        // Lógica de visualización única
+        function acceptSafety() {
+            localStorage.setItem('propart_safety', 'true');
+            document.getElementById('safety-overlay').style.display = 'none';
+        }
+        if(localStorage.getItem('propart_safety')) document.getElementById('safety-overlay').style.display = 'none';
+
+        // --- MOTOR WEB BLUETOOTH (ELM327) ---
+        let bluetoothDevice;
+        let characteristic;
+
+        async function connectBT() {
+            const status = document.getElementById('status');
+            try {
+                status.innerText = "BUSCANDO...";
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: ['00001101-0000-1000-8000-00805f9b34fb'] }], // UUID Estándar SPP
+                    optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
+                });
+                
+                const server = await bluetoothDevice.gatt.connect();
+                status.innerText = "CONECTADO: ELM327";
+                startDiagnosticLoop();
+            } catch (error) {
+                status.innerText = "ERROR BT: " + error;
+            }
+        }
+
+        // Simulación de lectura de sensores con Delay Anti-Lag (200ms)
+        function startDiagnosticLoop() {
+            setInterval(() => {
+                // Aquí irían los comandos AT 010C, 0111, etc.
+                // Simulamos la lectura para la demo funcional
+                let val1 = (Math.random() * 4.5).toFixed(2);
+                document.getElementById('app1').innerText = val1 + "V";
+                document.getElementById('app2').innerText = (val1 / 2).toFixed(2) + "V";
+                document.getElementById('pulse').innerText = (Math.random() * (3.5 - 2.0) + 2.0).toFixed(1) + "ms";
+                document.getElementById('rpm').innerText = Math.floor(Math.random() * (900 - 800) + 800);
+            }, 200);
+        }
+
+        function adminAccess() {
+            let pass = prompt("Acceso Especialista:");
+            if(pass === "admin123") alert("Acceso concedido. Cargando Base de Datos V3...");
+        }
     </script>
 </body>
 </html>
