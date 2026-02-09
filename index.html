@@ -16,6 +16,26 @@
 </head>
 <body>
 
+    // Motor de Gráficas ProPart
+const sensors = {
+    app1: { val: 0, pin: 24, color: '#3498ff' },
+    app2: { val: 0, pin: 25, color: '#fa8900' },
+    pulse: { val: 0, pin: 45, color: '#00ff00' }
+};
+
+function updateDiagnostic() {
+    // Simulación de lectura del ELM327 con delay de 200ms
+    sensors.app1.val = (Math.random() * 4.5).toFixed(2);
+    sensors.app2.val = (sensors.app1.val / 2).toFixed(2);
+    
+    document.getElementById('chart-app1').innerText = `Pin ${sensors.app1.pin}: ${sensors.app1.val}V`;
+    document.getElementById('chart-app2').innerText = `Pin 25: ${sensors.app2.val}V`;
+    
+    console.log("Chards: Monitoreando correlación APP...");
+}
+
+setInterval(updateDiagnostic, 200); // El ritmo del escáner chino
+    
     <div class="status-bar">
         <span>BT: ELM327 CONECTADO (LATENCIA: 200ms)</span>
         <span>MODO: DIAGNÓSTICO EN VIVO</span>
