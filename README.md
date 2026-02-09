@@ -16,7 +16,7 @@
 * **Gráficas en Tiempo Real:** Visualización dual (2) o cuádruple (4) de sensores críticos:
     * **APP1 vs APP2:** Correlación perfecta de pedales.
     * **Ancho de Pulso:** Tiempo real de inyección/bobinas en ms.
-* **Base de Datos Maestra:** Integración de Pinouts ECU (V3/V4) y soluciones directas de ALLDATA procesadas.
+* **Base de Datos Maestra:** Integración de Pinouts ECU (V3/V4) y soluciones directas procesadas.
 
 ---
 
