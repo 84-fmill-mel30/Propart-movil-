@@ -63,23 +63,24 @@
         let bluetoothDevice;
         let characteristic;
 
-        async function connectBT() {
-            const status = document.getElementById('status');
-            try {
-                status.innerText = "BUSCANDO...";
-                bluetoothDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: ['00001101-0000-1000-8000-00805f9b34fb'] }], // UUID Estándar SPP
-                    optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
-                });
-                
-                const server = await bluetoothDevice.gatt.connect();
-                status.innerText = "CONECTADO: ELM327";
-                startDiagnosticLoop();
-            } catch (error) {
-                status.innerText = "ERROR BT: " + error;
-            }
+        async function initBT() {
+    try {
+        // En lugar de filtrar por UUID, buscamos por todos los dispositivos 
+        // para que no se nos escape el clon chino
+        device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
+        });
+        
+        const server = await device.gatt.connect();
+        document.getElementById('bt-status').innerText = "✅ ENLAZADO CON: " + device.name;
+        runScanner();
+        } catch (e) { 
+        console.log(e);
+        alert("Chards: No se detectó el scanner. ¿Está prendido el switch del carro?"); 
         }
-
+     
+     }
         // Simulación de lectura de sensores con Delay Anti-Lag (200ms)
         function startDiagnosticLoop() {
             setInterval(() => {
